@@ -9,9 +9,6 @@ on:
       STACK_NAME:
         type: string
         required: true
-      TABLE_NAME:
-        type: string
-        required: true
 
 permissions:
   id-token: write
@@ -38,7 +35,6 @@ jobs:
         run: |
           npm i -g replace-in-files-cli
           replace-in-files --string='{{StackName}}' --replacement='${{ inputs.STACK_NAME }}' ./samconfig.ci.toml
-          replace-in-files --string='{{TableName}}' --replacement='${{ inputs.TABLE_NAME }}' ./samconfig.ci.toml
           cat ./samconfig.ci.toml
 
       - uses: aws-actions/setup-sam@v2

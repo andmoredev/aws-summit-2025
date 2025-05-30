@@ -3,10 +3,6 @@ Description: aws-community-day-mx
 Transform:
 - AWS::Serverless-2016-10-31
 
-Parameters:
-  TableName:
-    Type: String
-
 Globals:
   Function:
     Tracing: Active

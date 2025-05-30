@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 env:
-  STACK_NAME: math-operation-service
-  BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'pull_request' && github.head_ref }}
+  JIRA_PREFIX: 'TP'
+  FULL_BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'pull_request' && github.head_ref }}
 
 jobs:
   pre-deploy:
