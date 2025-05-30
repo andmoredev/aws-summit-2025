@@ -40,7 +40,7 @@ jobs:
 
           echo "ENV_DESCRIPTOR=$ENV_DESCRIPTOR" >> $GITHUB_ENV
           echo "# RUN METADATA" >> $GITHUB_STEP_SUMMARY
-          echo "* Logical Environment - $ENV_DESCRIPTOR" >> $GITHUB_STEP_SUMMARY
+          echo "* Environment Descriptor - $ENV_DESCRIPTOR" >> $GITHUB_STEP_SUMMARY
 
           echo "env_descriptor=$ENV_DESCRIPTOR" >> $GITHUB_OUTPUT
 

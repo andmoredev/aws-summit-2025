@@ -22,7 +22,7 @@
     "sinon": "^17.0.1"
   },
   "scripts": {
-    "test": "mocha functions/*/tests/*.mjs",
+    "test": "mocha \"./**/tests/*.mjs\"",
     "coverage": "c8 npm test",
     "lint": "eslint {**,.}/*.js --no-error-on-unmatched-pattern",
     "portman": "portman --cliOptionsFile portman/portman-cli.json",
