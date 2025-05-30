@@ -1,0 +1,63 @@
+name: Deploy QA
+run-name: Deploy ${{ github.ref_name }} to QA
+
+on:
+  workflow_dispatch:
+
+env:
+  STACK_NAME: math-operation-service
+  BRANCH_NAME: ${{ github.ref_name }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  predeploy-validations:
+    name: Pre-deploy validations
+    uses: ./.github/workflows/shared-pre-deploy-validations.yaml
+
+  deploy-api:
+      name: Deploy API
+      needs: [predeploy-validations]
+      uses: ./.github/workflows/shared-deploy-api.yaml
+      with:
+        WORKFLOW_ENV: qa
+        STACK_NAME: math-operation-service
+        TABLE_NAME: math-operation-history
+      secrets: inherit
+
+  get-api-url:
+    name: Get API Url
+    needs: [deploy-api]
+    runs-on: ubuntu-latest
+    environment: qa
+    outputs:
+      BASE_URL: ${{ steps.getUrl.outputs.BASE_URL }}
+    steps:
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
+          role-session-name: get-api-url
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      - id: getUrl
+        name: Get Url
+        run: |
+          url=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='ApiURL'].OutputValue" --output text)
+          echo $url
+
+          echo "BASE_URL=$url" >> "$GITHUB_OUTPUT"
+
+          echo "### Generated URLs" >> $GITHUB_STEP_SUMMARY
+          echo "API $url" >> $GITHUB_STEP_SUMMARY
+
+  postdeploy-validations:
+    name: Post-deploy validations
+    needs: [get-api-url]
+    uses: ./.github/workflows/shared-post-deploy-validations.yaml
+    with:
+      BASE_URL: ${{ needs.get-api-url.outputs.BASE_URL }}
+    secrets: inherit

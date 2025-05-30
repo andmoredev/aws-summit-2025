@@ -1,0 +1,59 @@
+name: Deploy API
+
+on:
+  workflow_call:
+    inputs:
+      WORKFLOW_ENV:
+        type: string
+        required: true
+      STACK_NAME:
+        type: string
+        required: true
+      TABLE_NAME:
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy SAM Application
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.WORKFLOW_ENV }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
+          role-session-name: deploy-api
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      - name: Replace Variables in samconfig
+        run: |
+          npm i -g replace-in-files-cli
+          replace-in-files --string='{{StackName}}' --replacement='${{ inputs.STACK_NAME }}' ./samconfig.ci.toml
+          replace-in-files --string='{{TableName}}' --replacement='${{ inputs.TABLE_NAME }}' ./samconfig.ci.toml
+          cat ./samconfig.ci.toml
+
+      - uses: aws-actions/setup-sam@v2
+        with:
+          version: 1.102.0
+
+      - name: SAM Build and Deploy
+        run: |
+          sam --info
+
+          sam build --config-file samconfig.ci.toml
+
+          sam deploy \
+          --config-file samconfig.ci.toml \
+          --config-env api \
+          --s3-bucket ${{ secrets.ARTIFACTS_BUCKET_NAME }} \
+          --no-fail-on-empty-changeset \
+          --role-arn ${{ secrets.CLOUDFORMATION_EXECUTION_ROLE }}

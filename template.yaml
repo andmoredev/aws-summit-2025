@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: aws-community-day-mx
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  TableName:
+    Type: String
+
+Globals:
+  Function:
+    Tracing: Active
+    Timeout: 10
+    Runtime: nodejs20.x
+    MemorySize: 128
+    Architectures:
+      - arm64
+
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: api
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openapi.yaml
+
+  EchoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/echo
+      Events:
+        EchoEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref API
+            Path: /echo
+            Method: POST
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        External:
+          - '@aws-sdk/client-secrets-manager'
+
+Outputs:
+  ApiURL:
+    Description: API URL
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/api
+
+  TableName:
+    Description: DynamoDB Table Name
+    Value: !Ref DynamoDBTable

@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.build]
+[default.build.parameters]
+cached="true"
+parallel="true"
+
+[api.deploy.parameters]
+stack_name = "{{StackName}}"
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+parameter_overrides = [
+  "TableName={{TableName}}",
+]

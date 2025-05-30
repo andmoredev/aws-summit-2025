@@ -1,0 +1,108 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Echo Service
+  description: Service that allows you to do send a message and get it back.
+  contact:
+    name: Andres Moreno
+    email: andres@andmore.dev
+
+tags:
+  - name: Operations
+    description: Math Operations
+
+servers:
+  - url: Math Operation Service
+    description: https://operations.andmore.dev/api
+
+x-amazon-apigateway-request-validators:
+  Validate body, query string parameters, and headers:
+    validateRequestParameters: true
+    validateRequestBody: true
+
+x-amazon-apigateway-gateway-responses:
+  BAD_REQUEST_BODY:
+    statusCode: '400'
+    responseTemplates:
+      application/json: '{ "message": "$context.error.validationErrorString" }'
+  UNAUTHORIZED:
+    statusCode: '401'
+    responseTemplates:
+      application/json: '{ "message": "Unauthorized" }'
+  ACCESS_DENIED:
+    statusCode: '401'
+    responseTemplates:
+      application/json: '{ "message": "Unauthorized" }'
+
+paths:
+  /echo:
+    post:
+      summary: Echo body
+      operationId: echo
+      description: |
+        Test endpoint that simply echos the body.
+      tags:
+        - Tool
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          $ref: '#/components/responses/badRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Forbidden
+        '500':
+          $ref: '#/components/responses/unexpectedError'
+      x-amazon-apigateway-request-validator: Validate body, query string parameters, and headers
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EchoFunction.Arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
+
+components:
+  responses:
+    unexpectedError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                enum:
+                  - Something went wrong!
+
+    badRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string

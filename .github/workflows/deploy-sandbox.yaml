@@ -1,0 +1,94 @@
+name: Deploy Sandbox
+run-name: Deploy ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'pull_request' && github.head_ref }} to Sandbox
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  STACK_NAME: math-operation-service
+  BRANCH_NAME: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'pull_request' && github.head_ref }}
+
+jobs:
+  pre-deploy:
+    name: Pre-deploy validations
+    uses: ./.github/workflows/shared-pre-deploy-validations.yaml
+
+  prepare-deployment:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      env_descriptor: ${{ steps.prepare-parameters.outputs.env_descriptor }}
+    steps:
+      - name: Prepare parameters
+        id: prepare-parameters
+        run: |
+          # Extract the Jira number from the branch to be used as the logical environment for temporary environments.
+          JIRA_NUMBER=$(echo "${{ env.FULL_BRANCH_NAME }}" | grep -oE '${{ env.JIRA_PREFIX }}-[0-9]+' || true)
+          if [ -z "$JIRA_NUMBER" ]; then
+            echo "No JIRA number found, generating random environment name..."
+            HASH=$(echo -n "${{ env.FULL_BRANCH_NAME }}" | sha1sum | cut -c1-6)
+            JIRA_NUMBER="env-${HASH}"
+          fi
+          ENV_DESCRIPTOR="$JIRA_NUMBER"
+
+          echo "ENV_DESCRIPTOR=$ENV_DESCRIPTOR" >> $GITHUB_ENV
+          echo "# RUN METADATA" >> $GITHUB_STEP_SUMMARY
+          echo "* Logical Environment - $ENV_DESCRIPTOR" >> $GITHUB_STEP_SUMMARY
+
+          echo "env_descriptor=$ENV_DESCRIPTOR" >> $GITHUB_OUTPUT
+
+  deploy-api:
+    name: Deploy API
+    needs: [pre-deploy, prepare-deployment]
+    uses: ./.github/workflows/shared-deploy-api.yaml
+    with:
+      WORKFLOW_ENV: sandbox
+      STACK_NAME: ${{ needs.prepare-parameters.outputs.env_descriptor }}
+    secrets: inherit
+
+
+  get-stack-outputs:
+    name: Get API Url
+    needs: [deploy-api]
+    runs-on: ubuntu-latest
+    environment: sandbox
+    outputs:
+      BASE_URL: ${{ steps.getStackOutputs.outputs.BASE_URL }}
+      TABLE_NAME: ${{ steps.getStackOutputs.outputs.TABLE_NAME }}
+    steps:
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
+          role-session-name: get-api-url
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      - id: getStackOutputs
+        name: Get Stack Ouputs
+        run: |
+          stackOutputJson=$(aws cloudformation describe-stacks --output json --stack-name ${{ needs.prepare-parameters.outputs.env_descriptor }} --query "Stacks[0].Outputs")
+          url=$(echo $stackOutputJson | jq -r '.[] | select(.OutputKey=="ApiURL") | .OutputValue')
+          tableName=$(echo $stackOutputJson | jq -r '.[] | select(.OutputKey=="TableName") | .OutputValue')
+
+          echo "BASE_URL=$url" >> "$GITHUB_OUTPUT"
+          echo "TABLE_NAME=$tableName" >> "$GITHUB_OUTPUT"
+
+          echo "### Generated URLs" >> $GITHUB_STEP_SUMMARY
+          echo "API $url" >> $GITHUB_STEP_SUMMARY
+          echo "DynamoDB Table $tableName" >> $GITHUB_STEP_SUMMARY
+
+  postdeploy-validations:
+    name: Post-deploy validations
+    needs: [get-stack-outputs]
+    uses: ./.github/workflows/shared-post-deploy-validations.yaml
+    with:
+      BASE_URL: ${{ needs.get-api-url.outputs.BASE_URL }}
+    secrets: inherit

@@ -1,0 +1,38 @@
+name: Post-deployment Validations
+
+on:
+  workflow_call:
+    inputs:
+      BASE_URL:
+        type: string
+        required: true
+
+jobs:
+  access-validation:
+    name: Access Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo 'Validate Access'
+
+  business-flow-tests:
+    name: Business Flow Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint OpenAPI
+        run: |
+          echo 'Business Flow Tests'
+
+  test-api:
+    name: Run Portman
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test API
+        env:
+          BASE_URL: ${{ inputs.BASE_URL }}
+        run: |
+          npm ci
+          npx @apideck/portman --cliOptionsFile portman/portman-cli.json --baseUrl ${{ inputs.BASE_URL }}
