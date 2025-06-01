@@ -39,6 +39,9 @@ jobs:
 
       - name: SAM Build and Deploy
         run: |
+          npm install -g esbuild
+          npm ci
+
           sam --info
 
           sam build --config-file samconfig.ci.toml
