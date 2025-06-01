@@ -7,8 +7,9 @@ Globals:
   Function:
     Tracing: Active
     Timeout: 10
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     MemorySize: 128
+    Handler: index.handler
     Architectures:
       - arm64
 
