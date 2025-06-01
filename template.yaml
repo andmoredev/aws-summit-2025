@@ -48,7 +48,7 @@ Resources:
         EchoEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref API
+            RestApiId: !Ref Api
             Path: /echo
             Method: POST
       Policies:
