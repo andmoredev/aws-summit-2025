@@ -37,10 +37,6 @@ jobs:
           replace-in-files --string='{{StackName}}' --replacement='${{ inputs.STACK_NAME }}' ./samconfig.ci.toml
           cat ./samconfig.ci.toml
 
-      - uses: aws-actions/setup-sam@v2
-        with:
-          version: 1.102.0
-
       - name: SAM Build and Deploy
         run: |
           sam --info
