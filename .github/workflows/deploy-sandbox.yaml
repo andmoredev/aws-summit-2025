@@ -50,7 +50,7 @@ jobs:
     uses: ./.github/workflows/shared-deploy-api.yaml
     with:
       WORKFLOW_ENV: sandbox
-      STACK_NAME: ${{ needs.prepare-parameters.outputs.env_descriptor }}
+      STACK_NAME: ${{ needs.prepare-deployment.outputs.env_descriptor }}
     secrets: inherit
 
 
