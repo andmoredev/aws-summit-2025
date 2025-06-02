@@ -74,7 +74,7 @@ jobs:
       - id: getStackOutputs
         name: Get Stack Ouputs
         run: |
-          stackOutputJson=$(aws cloudformation describe-stacks --output json --stack-name ${{ needs.prepare-parameters.outputs.env_descriptor }} --query "Stacks[0].Outputs")
+          stackOutputJson=$(aws cloudformation describe-stacks --output json --stack-name ${{ needs.prepare-deployment.outputs.env_descriptor }} --query "Stacks[0].Outputs")
           url=$(echo $stackOutputJson | jq -r '.[] | select(.OutputKey=="ApiURL") | .OutputValue')
           tableName=$(echo $stackOutputJson | jq -r '.[] | select(.OutputKey=="TableName") | .OutputValue')
 
