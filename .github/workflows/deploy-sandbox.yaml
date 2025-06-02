@@ -55,7 +55,7 @@ jobs:
 
 
   get-stack-outputs:
-    name: Get API Url
+    name: Get Stack Outputs
     needs: [prepare-deployment, deploy-api]
     runs-on: ubuntu-latest
     environment: sandbox
@@ -90,5 +90,5 @@ jobs:
     needs: [get-stack-outputs]
     uses: ./.github/workflows/shared-post-deploy-validations.yaml
     with:
-      BASE_URL: ${{ needs.get-api-url.outputs.BASE_URL }}
+      BASE_URL: ${{ needs.get-stack-outputs.outputs.BASE_URL }}
     secrets: inherit
