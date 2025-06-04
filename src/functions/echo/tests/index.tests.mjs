@@ -1,7 +1,7 @@
 
 import * as app from '../index.mjs';
 import { expect } from 'chai';
-import { mockClient } from "aws-sdk-client-mock";
+import { mockClient } from 'aws-sdk-client-mock';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
 const ddbMock = mockClient(DynamoDBClient);

@@ -1,7 +1,7 @@
 import { initializePowertools, logger } from '../shared/lambda-powertools.mjs';
 import { getResponse } from '../shared/apigateway.mjs';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { ulid } from "ulid";
+import { ulid } from 'ulid';
 
 const dynamoDBClient = new DynamoDBClient();
 
