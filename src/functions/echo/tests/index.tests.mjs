@@ -1,10 +1,25 @@
 
 import * as app from '../index.mjs';
 import { expect } from 'chai';
+import { mockClient } from "aws-sdk-client-mock";
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+
+const ddbMock = mockClient(DynamoDBClient);
+
+beforeEach(() => {
+  ddbMock.reset();
+});
 
 describe('Echo', () => {
   describe('handler', () => {
     it('Successfully', async () => {
+      ddbMock.on(PutItemCommand).resolves({
+        Attributes: {
+          id: '12345',
+          data: JSON.stringify({ hello: 'world' })
+        }
+      });
+
       const response = await app.handler({
         body: JSON.stringify({
           hello: 'world'

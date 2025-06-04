@@ -54,6 +54,12 @@ Resources:
             Method: POST
       Policies:
         - AWSLambdaBasicExecutionRole
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: !GetAtt DynamoDBTable.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
