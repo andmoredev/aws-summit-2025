@@ -12,7 +12,7 @@ export const handler = initializePowertools(async (event) => {
     const putItemCommand = new PutItemCommand({
       TableName: process.env.TABLE_NAME,
       Item: {
-        id: { S: ulid() },
+        pk: { S: ulid() },
         data: { S: JSON.stringify(input) }
       }
     });
