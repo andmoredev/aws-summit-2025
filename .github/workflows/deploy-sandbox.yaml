@@ -53,7 +53,6 @@ jobs:
       STACK_NAME: ${{ needs.prepare-deployment.outputs.env_descriptor }}
     secrets: inherit
 
-
   get-stack-outputs:
     name: Get Stack Outputs
     needs: [prepare-deployment, deploy-api]
@@ -92,3 +91,30 @@ jobs:
     with:
       BASE_URL: ${{ needs.get-stack-outputs.outputs.BASE_URL }}
     secrets: inherit
+
+  auto-merge-dependabot-update:
+    name: Auto Merge Dependabot Update
+    needs: [postdeploy-validations]
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v2
+      - uses: actions/checkout@v4
+      - name: Approve a PR if not already approved
+        if: ${{ steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.package-ecosystem == 'github_actions' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr checkout "$PR_URL" # sets the upstream metadata for `gh pr status`
+
+          if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ]; then
+            gh pr review --approve "$PR_URL"
+          fi
+
+          gh pr merge --auto --merge "$PR_URL"
