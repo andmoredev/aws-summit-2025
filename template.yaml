@@ -23,12 +23,8 @@ Resources:
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
-        - AttributeName: sk
-          KeyType: RANGE
       AttributeDefinitions:
         - AttributeName: pk
-          AttributeType: S
-        - AttributeName: sk
           AttributeType: S
 
   Api:
@@ -52,6 +48,9 @@ Resources:
             RestApiId: !Ref Api
             Path: /echo
             Method: POST
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DynamoDBTable
       Policies:
         - AWSLambdaBasicExecutionRole
         - Version: 2012-10-17
