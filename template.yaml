@@ -52,6 +52,9 @@ Resources:
             RestApiId: !Ref Api
             Path: /echo
             Method: POST
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DynamoDBTable
       Policies:
         - AWSLambdaBasicExecutionRole
         - Version: 2012-10-17
