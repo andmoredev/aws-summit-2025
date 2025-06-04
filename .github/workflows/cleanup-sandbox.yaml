@@ -21,37 +21,33 @@ env:
   BRANCH_NAME: ${{ github.event_name == 'pull_request' && github.actor == 'dependabot[bot]' && inputs.STACK_NAME || github.event_name == 'workflow_dispatch' && github.ref_name || github.event_name == 'pull_request' && github.head_ref }}
 
 jobs:
-  get-stack-name:
-    name: Get Stack Name
+  prepare-destruction:
+    name: Prepare Destruction
     runs-on: ubuntu-latest
     outputs:
-      STACK_NAME: ${{ steps.get-stack-name-step.outputs.STACK_NAME || steps.dependabot-get-stack-name-step.outputs.STACK_NAME }}
+      env_descriptor: ${{ steps.prepare-parameters.outputs.env_descriptor }}
     steps:
-      - name: Get the data to be used as the parameters for the stack
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        id: get-stack-name-step
+      - name: Prepare parameters
+        id: prepare-parameters
         run: |
-          cleanedBranchName=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9_.-]/-/g')
-          stackNamePlusBranchName=$STACK_NAME-$cleanedBranchName
+          # Extract the Jira number from the branch to be used as the logical environment for temporary environments.
+          JIRA_NUMBER=$(echo "${{ env.FULL_BRANCH_NAME }}" | grep -oE '${{ env.JIRA_PREFIX }}-[0-9]+' || true)
+          if [ -z "$JIRA_NUMBER" ]; then
+            echo "No JIRA number found, generating random environment name..."
+            HASH=$(echo -n "${{ env.FULL_BRANCH_NAME }}" | sha1sum | cut -c1-6)
+            JIRA_NUMBER="env-${HASH}"
+          fi
+          ENV_DESCRIPTOR="$JIRA_NUMBER"
 
-          truncatedStackName="${stackNamePlusBranchName:0:128}"
+          echo "ENV_DESCRIPTOR=$ENV_DESCRIPTOR" >> $GITHUB_ENV
+          echo "# RUN METADATA" >> $GITHUB_STEP_SUMMARY
+          echo "* Environment Descriptor - $ENV_DESCRIPTOR" >> $GITHUB_STEP_SUMMARY
 
-          echo "STACK_NAME=$truncatedStackName" >> $GITHUB_OUTPUT
-          echo "### Stack Name $truncatedStackName" >> $GITHUB_STEP_SUMMARY
-
-      - name: Get the data to be used as the parameters for the stack (dependabot)
-        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
-        id: dependabot-get-stack-name-step
-        run: |
-          prNumber=$(echo "pr-${{ github.event.number }}")
-          stackNamePlusPrNumber=$STACK_NAME-$prNumber
-
-          echo "STACK_NAME=$stackNamePlusPrNumber" >> $GITHUB_OUTPUT
-          echo "### Stack Name (Dependabot) $stackNamePlusPrNumber" >> $GITHUB_STEP_SUMMARY
+          echo "env_descriptor=$ENV_DESCRIPTOR" >> $GITHUB_OUTPUT
 
   cleanup-resources:
     name: Delete Sandbox Resources
-    needs: [get-stack-name]
+    needs: [prepare-destruction]
     runs-on: ubuntu-latest
     environment: sandbox
     steps:
@@ -71,6 +67,6 @@ jobs:
       - name: Delete Stack
         run: |
           sam delete \
-          --stack-name ${{ needs.get-stack-name.outputs.STACK_NAME }} \
+          --stack-name ${{ needs.prepare-destruction.outputs.env_descriptor }} \
           --region ${{ vars.AWS_REGION }} \
           --no-prompts
