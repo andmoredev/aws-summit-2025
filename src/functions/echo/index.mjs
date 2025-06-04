@@ -14,6 +14,7 @@ export const handler = initializePowertools(async (event) => {
       Item: {
         pk: { S: ulid() },
         data: { S: JSON.stringify(input) }
+        random: 'grabame en la base de datos'
       }
     });
 
