@@ -13,7 +13,7 @@ export const handler = initializePowertools(async (event) => {
       TableName: process.env.TABLE_NAME,
       Item: {
         pk: { S: ulid() },
-        data: { S: JSON.stringify(input) }
+        data: { S: JSON.stringify(input) },
         random: 'grabame en la base de datos'
       }
     });
