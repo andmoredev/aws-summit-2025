@@ -13,9 +13,9 @@ export const handler = initializePowertools(async (event) => {
     const putItemCommand = new PutItemCommand({
       TableName: process.env.TABLE_NAME,
       Item: marshall({
-        pk: { S: ulid() },
-        data: { S: JSON.stringify(input) },
-        timestamp: { S: new Date().toISOString() }
+        pk: ulid(),
+        data: JSON.stringify(input),
+        timestamp: new Date().toISOString()
       })
     });
 
