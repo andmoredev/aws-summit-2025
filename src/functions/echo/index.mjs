@@ -1,6 +1,7 @@
 import { initializePowertools, logger } from '../shared/lambda-powertools.mjs';
 import { getResponse } from '../shared/apigateway.mjs';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import { ulid } from 'ulid';
 
 const dynamoDBClient = new DynamoDBClient();
@@ -11,11 +12,11 @@ export const handler = initializePowertools(async (event) => {
 
     const putItemCommand = new PutItemCommand({
       TableName: process.env.TABLE_NAME,
-      Item: {
+      Item: marshall({
         pk: { S: ulid() },
         data: { S: JSON.stringify(input) },
-        random: 'grabame en la base de datos'
-      }
+        timestamp: { S: new Date().toISOString() }
+      })
     });
 
     await dynamoDBClient.send(putItemCommand);
