@@ -28,7 +28,8 @@ describe('Echo', () => {
 
       expect(response.statusCode).to.equal(200);
       const body = JSON.parse(response.body);
-      expect(body).to.have.property('hello', 'world');
+      expect(body).to.have.property('input');
+      expect(body.input).to.have.property('hello', 'world');
     });
 
     it('500 - Unhandled error', async () => {
