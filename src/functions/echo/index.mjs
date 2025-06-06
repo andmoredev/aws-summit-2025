@@ -14,16 +14,14 @@ export const handler = initializePowertools(async (event) => {
       TableName: process.env.TABLE_NAME,
       Item: marshall({
         pk: ulid(),
-        data: JSON.stringify(input),
-        atributo: 'nuevo'
+        data: JSON.stringify(input)
       })
     });
 
     await dynamoDBClient.send(putItemCommand);
 
     return getResponse(200, {
-      input,
-      atribute: 'nuevo'
+      input
     });
   } catch (err) {
     logger.error(err, err.stack);
