@@ -21,7 +21,8 @@ export const handler = initializePowertools(async (event) => {
     await dynamoDBClient.send(putItemCommand);
 
     return getResponse(200, {
-      input
+      input,
+      atributo: 'nuevo'
     });
   } catch (err) {
     logger.error(err, err.stack);
