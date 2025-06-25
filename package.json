@@ -19,7 +19,7 @@
     "eslint": "^9.29.0",
     "eslint-config-google": "^0.14.0",
     "globals": "^16.2.0",
-    "mocha": "^11.7.0",
+    "mocha": "^11.7.1",
     "sinon": "^21.0.0"
   },
   "scripts": {
