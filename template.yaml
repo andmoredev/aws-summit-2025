@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: aws-community-day-mx
+Description: aws-summit-mx
 Transform:
 - AWS::Serverless-2016-10-31
 
