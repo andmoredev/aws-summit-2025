@@ -12,7 +12,7 @@ jobs:
     name: Access Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: |
           echo 'Validate Access'
 
@@ -20,7 +20,7 @@ jobs:
     name: Business Flow Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Lint OpenAPI
         run: |
           echo 'Business Flow Tests'
@@ -29,7 +29,7 @@ jobs:
     name: Run Portman
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Test API
         env:
           BASE_URL: ${{ inputs.BASE_URL }}
