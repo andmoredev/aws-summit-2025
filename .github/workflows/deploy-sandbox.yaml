@@ -64,7 +64,7 @@ jobs:
       TABLE_NAME: ${{ steps.getStackOutputs.outputs.TABLE_NAME }}
     steps:
       - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ${{ vars.AWS_REGION }}
           role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
