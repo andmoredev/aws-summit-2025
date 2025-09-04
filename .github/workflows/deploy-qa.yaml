@@ -36,7 +36,7 @@ jobs:
       BASE_URL: ${{ steps.getUrl.outputs.BASE_URL }}
     steps:
       - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ${{ vars.AWS_REGION }}
           role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
