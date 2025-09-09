@@ -7,7 +7,7 @@
     "@aws-lambda-powertools/parameters": "^2.25.2",
     "@aws-lambda-powertools/tracer": "^2.25.2",
     "@aws-sdk/client-dynamodb": "^3.883.0",
-    "@middy/core": "^6.4.4",
+    "@middy/core": "^6.4.5",
     "ulid": "^3.0.1"
   },
   "devDependencies": {
