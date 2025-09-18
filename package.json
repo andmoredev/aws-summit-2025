@@ -6,7 +6,7 @@
     "@aws-lambda-powertools/metrics": "^2.26.1",
     "@aws-lambda-powertools/parameters": "^2.26.1",
     "@aws-lambda-powertools/tracer": "^2.26.1",
-    "@aws-sdk/client-dynamodb": "^3.890.0",
+    "@aws-sdk/client-dynamodb": "^3.891.0",
     "@middy/core": "^6.4.5",
     "ulid": "^3.0.1"
   },
