@@ -52,12 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: sandbox
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ vars.AWS_REGION }}
           role-to-assume: ${{ secrets.PIPELINE_EXECUTION_ROLE }}
